@@ -1,11 +1,11 @@
-import TaskManager from "./TaskManager";
+import QueueManager from "./QueueManager";
 
 export default function Home() {
   return (
     <main className="flex flex-col items-center justify-between p-24">
-      <div className="w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Task Manager</h1>
-        <TaskManager />
+      <div className="w-full max-w-6xl">
+        <h1 className="text-2xl font-bold mb-6">Queue Manager</h1>
+        <QueueManager />
       </div>
     </main>
   );
