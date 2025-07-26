@@ -1,17 +1,15 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// Get all active queues
 export const getActiveQueues = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("queues")
-      .filter((q) => q.eq(q.field("isActive"), true))
+      .withIndex("by_isActive", (q) => q.eq("isActive", true))
       .collect();
   },
 });
 
-// Get queue with all its items
 export const getQueueWithItems = query({
   args: { queueId: v.id("queues") },
   handler: async (ctx, args) => {
@@ -19,7 +17,7 @@ export const getQueueWithItems = query({
     if (!queue) return null;
 
     const items = await ctx.db.query("queueItems")
-      .filter((q) => q.eq(q.field("queueId"), args.queueId))
+      .withIndex("by_queueId", (q) => q.eq("queueId", args.queueId))
       .order("asc")
       .collect();
 
@@ -30,14 +28,14 @@ export const getQueueWithItems = query({
   },
 });
 
-// Get queue statistics
 export const getQueueStats = query({
   args: { queueId: v.id("queues") },
   handler: async (ctx, args) => {
     const items = await ctx.db.query("queueItems")
-      .filter((q) => q.eq(q.field("queueId"), args.queueId))
+      .withIndex("by_queueId", (q) => q.eq("queueId", args.queueId))
       .collect();
 
+    // Quick TypeScript filtering - very fast for small datasets
     const waiting = items.filter(item => item.status === "waiting").length;
     const processing = items.filter(item => item.status === "processing").length;
     const completed = items.filter(item => item.status === "completed").length;
@@ -54,7 +52,6 @@ export const getQueueStats = query({
   },
 });
 
-// Create a new queue
 export const createQueue = mutation({
   args: {
     name: v.string(),
@@ -72,7 +69,6 @@ export const createQueue = mutation({
   },
 });
 
-// Join a queue
 export const joinQueue = mutation({
   args: {
     queueId: v.id("queues"),
@@ -98,7 +94,6 @@ export const joinQueue = mutation({
   },
 });
 
-// Start processing an item (admin action)
 export const startProcessing = mutation({
   args: {
     itemId: v.id("queueItems"),
@@ -116,7 +111,6 @@ export const startProcessing = mutation({
   },
 });
 
-// Complete an item (admin action)
 export const completeItem = mutation({
   args: {
     itemId: v.id("queueItems"),
@@ -134,7 +128,6 @@ export const completeItem = mutation({
   },
 });
 
-// Cancel an item (user can cancel their own, admin can cancel any)
 export const cancelItem = mutation({
   args: {
     itemId: v.id("queueItems"),
@@ -161,12 +154,11 @@ export const cancelItem = mutation({
   },
 });
 
-// Get user's active items
 export const getUserItems = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db.query("queueItems")
-      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .filter((q) => q.neq(q.field("status"), "completed"))
       .filter((q) => q.neq(q.field("status"), "cancelled"))
       .collect();

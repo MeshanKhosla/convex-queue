@@ -7,7 +7,8 @@ export default defineSchema({
     description: v.optional(v.string()),
     isActive: v.boolean(),
     maxConcurrentItems: v.optional(v.number()),
-  }),
+  }).index("by_isActive", ["isActive"]),
+  
   queueItems: defineTable({
     queueId: v.id("queues"),
     userId: v.string(), // Simple string for demo, could be v.id("users") in production
@@ -17,7 +18,12 @@ export default defineSchema({
     startedAt: v.optional(v.number()),
     completedAt: v.optional(v.number()),
     notes: v.optional(v.string()),
-  }),
+  })
+    .index("by_queueId", ["queueId"])
+    .index("by_userId", ["userId"])
+    .index("by_userId_status", ["userId", "status"])
+    .index("by_queueId_status", ["queueId", "status"]),
+    
   users: defineTable({
     name: v.string(),
     isAdmin: v.boolean(),
